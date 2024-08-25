@@ -1,133 +1,141 @@
 #include "exql.h"
-using namespace std;
-TokenizerError unexpectedOrUnsupportedToken(Location location, string input)
+bool isPrintError = false;
+Token::Token(TokenType type, std::string value) : type(type), value(value) {}
+TokenizerError::TokenizerError(ErrorKind kind, Location location, std::string input)
+    : kind(kind), location(location), input(input) {}
+TokenizerError unexpectedOrUnsupportedToken(const Location location, const std::string input)
 {
     return TokenizerError(ErrorKind::UnexpectedOrUnsupportedToken, location, input);
 }
-TokenizerError unexpectedWhileParsingOperator(Location location, string input)
+TokenizerError unexpectedWhileParsingOperator(const Location location, const std::string input)
 {
     return TokenizerError(ErrorKind::UnexpectedWhileParsingOperator, location, input);
 }
-TokenizerError operatorNotClosed(Location location, string input)
+TokenizerError operatorNotClosed(const Location location, const std::string input)
 {
     return TokenizerError(ErrorKind::OperatorNotClosed, location, input);
 }
-TokenizerError stringNotClosed(Location location, string input)
+TokenizerError stringNotClosed(const Location location, const std::string input)
 {
     return TokenizerError(ErrorKind::StringNotClosed, location, input);
 }
-TokenizerError other(Location location, string input)
+TokenizerError other(const Location location, const std::string input)
 {
     return TokenizerError(ErrorKind::Other, location, input);
 }
-Token tokenizeKeywordOrIdentifier(string input)
+Token tokenizeKeywordOrIdentifier(const std::string input)
 {
     // Logic to tokenize keywords or identifiers
-    if (input == "SELECT")
+    std::string inputTemp = input;
+    for (int i = 0; i < inputTemp.size(); i++)
+    {
+        inputTemp[i] = toupper(inputTemp[i]);
+    }
+    if (inputTemp == "SELECT")
     {
         return Token(TokenType::Keyword, "select");
     }
-    else if (input == "FROM")
+    else if (inputTemp == "FROM")
     {
         return Token(TokenType::Keyword, "from");
     }
-    else if (input == "WHERE")
+    else if (inputTemp == "WHERE")
     {
         return Token(TokenType::Keyword, "where");
     }
-    else if (input == "ORDER")
+    else if (inputTemp == "ORDER")
     {
         return Token(TokenType::Keyword, "order");
     }
-    else if (input == "BY")
+    else if (inputTemp == "BY")
     {
         return Token(TokenType::Keyword, "by");
     }
-    else if (input == "AND")
+    else if (inputTemp == "AND")
     {
         return Token(TokenType::Keyword, "and");
     }
-    else if (input == "OR")
+    else if (inputTemp == "OR")
     {
         return Token(TokenType::Keyword, "or");
     }
-    else if (input == "CREATE")
+    else if (inputTemp == "CREATE")
     {
         return Token(TokenType::Keyword, "create");
     }
-    else if (input == "TABLE")
+    else if (inputTemp == "TABLE")
     {
         return Token(TokenType::Keyword, "table");
     }
-    else if (input == "INT")
+    else if (inputTemp == "INT")
     {
         return Token(TokenType::Keyword, "int");
     }
-    else if (input == "PRIMARY")
+    else if (inputTemp == "PRIMARY")
     {
         return Token(TokenType::Keyword, "primary");
     }
-    else if (input == "KEY")
+    else if (inputTemp == "KEY")
     {
         return Token(TokenType::Keyword, "key");
     }
-    else if (input == "VARCHAR")
+    else if (inputTemp == "VARCHAR")
     {
         return Token(TokenType::Keyword, "varchar");
     }
-    else if (input == "BOOL")
+    else if (inputTemp == "BOOL")
     {
         return Token(TokenType::Keyword, "bool");
     }
-    else if (input == "UPDATE")
+    else if (inputTemp == "UPDATE")
     {
         return Token(TokenType::Keyword, "update");
     }
-    else if (input == "SET")
+    else if (inputTemp == "SET")
     {
         return Token(TokenType::Keyword, "set");
     }
-    else if (input == "INSERT")
+    else if (inputTemp == "INSERT")
     {
         return Token(TokenType::Keyword, "insert");
     }
-    else if (input == "INTO")
+    else if (inputTemp == "INTO")
     {
         return Token(TokenType::Keyword, "into");
     }
-    else if (input == "VALUES")
+    else if (inputTemp == "VALUES")
     {
         return Token(TokenType::Keyword, "values");
     }
-    else if (input == "TRUE")
+    else if (inputTemp == "TRUE")
     {
         return Token(TokenType::Keyword, "true");
     }
-    else if (input == "FALSE")
+    else if (inputTemp == "FALSE")
     {
         return Token(TokenType::Keyword, "false");
     }
-    else if (input == "DELETE")
+    else if (inputTemp == "DELETE")
     {
         return Token(TokenType::Keyword, "delete");
     }
-    else if (input == "DROP")
+    else if (inputTemp == "DROP")
     {
         return Token(TokenType::Keyword, "drop");
     }
     return Token(TokenType::Identifier, input);
 }
-Token tokenizeNumber(string input)
+Token tokenizeNumber(const std::string input)
 {
     // Logic to tokenize numbers
     return Token(TokenType::Number, input);
 }
-Token tokenizeString(string input)
+Token tokenizeString(const std::string input)
 {
     // Logic to tokenize strings
     return Token(TokenType::String, input);
 }
-Token tokenizeOperatorOrSeparator(string input)
+Token tokenizeOperatorOrSeparator(const std::string input)
 {
     // Logic to tokenize operators and separators
     if (input == ",")
@@ -200,7 +208,7 @@ Token tokenizeOperatorOrSeparator(string input)
     }
     return Token(TokenType::Invalid, input);
 }
-string tokenToString(Token token)
+std::string tokenToString(const Token token)
 {
     if (token.type == TokenType::Comma)
     {
@@ -264,20 +272,20 @@ string tokenToString(Token token)
     }
     return token.value;
 }
-vector<Token> tokenize(string input)
+std::vector<Token> tokenize(const std::string input)
 {
-    vector<Token> tokens;
+    std::vector<Token> tokens;
     Location location = {1, 1};
     for (int i = 0; i < input.size(); i++)
     {
         char currentChar = input[i];
         if (isspace(currentChar))
         {
-            tokens.push_back(tokenizeOperatorOrSeparator(string(1, currentChar)));
+            tokens.push_back(tokenizeOperatorOrSeparator(std::string(1, currentChar)));
         }
         else if (isdigit(currentChar))
         {
-            string number = "";
+            std::string number = "";
             while (isdigit(currentChar))
             {
                 number += currentChar;
@@ -289,7 +297,7 @@ vector<Token> tokenize(string input)
         }
         else if (currentChar == '"')
         {
-            string str = "";
+            std::string str = "";
             i++;
             currentChar = input[i];
             while (currentChar != '"' && i < input.size())
@@ -309,7 +317,7 @@ vector<Token> tokenize(string input)
         }
         else if (currentChar == '\'')
         {
-            string str = "";
+            std::string str = "";
             i++;
             currentChar = input[i];
             while (currentChar != '\'' && i < input.size())
@@ -329,13 +337,13 @@ vector<Token> tokenize(string input)
         }
         else if (currentChar == ',' || currentChar == ';' || currentChar == '(' || currentChar == ')' || currentChar == '=' || currentChar == '!' || currentChar == '<' || currentChar == '>' || currentChar == '+' || currentChar == '-' || currentChar == '*' || currentChar == '/')
         {
-            string op = "";
-            if(currentChar == '!' || currentChar == '<' || currentChar == '>')
+            std::string op = "";
+            if (currentChar == '!' || currentChar == '<' || currentChar == '>')
             {
                 op += currentChar;
                 i++;
                 currentChar = input[i];
-                if(currentChar == '=')
+                if (currentChar == '=')
                 {
                     op += currentChar;
                 }
@@ -361,7 +369,7 @@ vector<Token> tokenize(string input)
                 {
                     location.col = i + 2;
                     TokenizerError error = unexpectedWhileParsingOperator(location, input);
-                    printError(error, string(1, input[i + 1]), tokenizeOperatorOrSeparator(op));
+                    printError(error, std::string(1, input[i + 1]), tokenizeOperatorOrSeparator(op));
                     isPrintError = true;
                 }
                 else
@@ -376,7 +384,7 @@ vector<Token> tokenize(string input)
         }
         else if (isalpha(currentChar))
         {
-            string identifier = "";
+            std::string identifier = "";
             while (isalpha(currentChar) || isdigit(currentChar) || currentChar == '_')
             {
                 identifier += currentChar;
@@ -389,7 +397,7 @@ vector<Token> tokenize(string input)
         else
         {
             location.col = i + 1;
-            Token token = tokenizeOperatorOrSeparator(string(1, currentChar));
+            Token token = tokenizeOperatorOrSeparator(std::string(1, currentChar));
             TokenizerError error = unexpectedOrUnsupportedToken(location, input);
             printError(error, input, token);
             isPrintError = true;
@@ -398,9 +406,9 @@ vector<Token> tokenize(string input)
     tokens.push_back(Token(TokenType::Eof, ""));
     return tokens;
 }
-void printTokens(vector<Token> tokens)
+void printTokens(std::vector<Token> tokens)
 {
-    cout << "Ok({" << endl;
+    std::cout << "Ok({" << std::endl;
     for (int i = 0; i < tokens.size(); i++)
     {
         Token token = tokens[i];
@@ -408,256 +416,231 @@ void printTokens(vector<Token> tokens)
         {
             if (token.value == "select")
             {
-                cout << "    Token::Keyword(Keyword::Select)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Select)," << std::endl;
             }
             else if (token.value == "from")
             {
-                cout << "    Token::Keyword(Keyword::From)," << endl;
+                std::cout << "    Token::Keyword(Keyword::From)," << std::endl;
             }
             else if (token.value == "where")
             {
-                cout << "    Token::Keyword(Keyword::Where)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Where)," << std::endl;
             }
             else if (token.value == "order")
             {
-                cout << "    Token::Keyword(Keyword::Order)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Order)," << std::endl;
             }
             else if (token.value == "by")
             {
-                cout << "    Token::Keyword(Keyword::By)," << endl;
+                std::cout << "    Token::Keyword(Keyword::By)," << std::endl;
             }
             else if (token.value == "and")
             {
-                cout << "    Token::Keyword(Keyword::And)," << endl;
+                std::cout << "    Token::Keyword(Keyword::And)," << std::endl;
             }
             else if (token.value == "or")
             {
-                cout << "    Token::Keyword(Keyword::Or)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Or)," << std::endl;
             }
             else if (token.value == "create")
             {
-                cout << "    Token::Keyword(Keyword::Create)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Create)," << std::endl;
             }
             else if (token.value == "table")
             {
-                cout << "    Token::Keyword(Keyword::Table)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Table)," << std::endl;
             }
             else if (token.value == "int")
             {
-                cout << "    Token::Keyword(Keyword::Int)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Int)," << std::endl;
             }
             else if (token.value == "primary")
             {
-                cout << "    Token::Keyword(Keyword::Primary)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Primary)," << std::endl;
             }
             else if (token.value == "key")
             {
-                cout << "    Token::Keyword(Keyword::Key)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Key)," << std::endl;
             }
             else if (token.value == "varchar")
             {
-                cout << "    Token::Keyword(Keyword::Varchar)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Varchar)," << std::endl;
             }
             else if (token.value == "bool")
             {
-                cout << "    Token::Keyword(Keyword::Bool)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Bool)," << std::endl;
             }
             else if (token.value == "update")
             {
-                cout << "    Token::Keyword(Keyword::Update)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Update)," << std::endl;
             }
             else if (token.value == "set")
             {
-                cout << "    Token::Keyword(Keyword::Set)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Set)," << std::endl;
             }
             else if (token.value == "insert")
             {
-                cout << "    Token::Keyword(Keyword::Insert)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Insert)," << std::endl;
             }
             else if (token.value == "into")
             {
-                cout << "    Token::Keyword(Keyword::Into)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Into)," << std::endl;
             }
             else if (token.value == "values")
             {
-                cout << "    Token::Keyword(Keyword::Values)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Values)," << std::endl;
             }
             else if (token.value == "true")
             {
-                cout << "    Token::Keyword(Keyword::True)," << endl;
+                std::cout << "    Token::Keyword(Keyword::True)," << std::endl;
             }
             else if (token.value == "false")
             {
-                cout << "    Token::Keyword(Keyword::False)," << endl;
+                std::cout << "    Token::Keyword(Keyword::False)," << std::endl;
             }
             else if (token.value == "delete")
             {
-                cout << "    Token::Keyword(Keyword::Delete)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Delete)," << std::endl;
             }
             else if (token.value == "drop")
             {
-                cout << "    Token::Keyword(Keyword::Drop)," << endl;
+                std::cout << "    Token::Keyword(Keyword::Drop)," << std::endl;
             }
         }
         else if (token.type == TokenType::Identifier)
         {
-            cout << "    Token::Identifier(\"" << token.value << "\")," << endl;
+            std::cout << "    Token::Identifier(\"" << token.value << "\")," << std::endl;
         }
         else if (token.type == TokenType::Number)
         {
-            cout << "    Token::Number(\"" << token.value << "\")," << endl;
+            std::cout << "    Token::Number(\"" << token.value << "\")," << std::endl;
         }
         else if (token.type == TokenType::String)
         {
             size_t pos = 0;
-            while ((pos = token.value.find("\"", pos)) != string::npos)
+            std::string valueTemp = token.value;
+            while ((pos = token.value.find("\"", pos)) != std::string::npos)
             {
-                token.value.insert(pos, "\\");
+                valueTemp.insert(pos, "\\");
                 pos += 2;
             }
-            cout << "    Token::String(\"" << token.value << "\")," << endl;
+            std::cout << "    Token::String(\"" << token.value << "\")," << std::endl;
         }
         else if (token.type == TokenType::Comma)
         {
-            cout << "    Token::Comma," << endl;
+            std::cout << "    Token::Comma," << std::endl;
         }
         else if (token.type == TokenType::SemiColon)
         {
-            cout << "    Token::SemiColon," << endl;
+            std::cout << "    Token::SemiColon," << std::endl;
         }
         else if (token.type == TokenType::LeftParen)
         {
-            cout << "    Token::LeftParen," << endl;
+            std::cout << "    Token::LeftParen," << std::endl;
         }
         else if (token.type == TokenType::RightParen)
         {
-            cout << "    Token::RightParen," << endl;
+            std::cout << "    Token::RightParen," << std::endl;
         }
         else if (token.type == TokenType::Eq)
         {
-            cout << "    Token::Eq," << endl;
+            std::cout << "    Token::Eq," << std::endl;
         }
         else if (token.type == TokenType::Neq)
         {
-            cout << "    Token::Neq," << endl;
+            std::cout << "    Token::Neq," << std::endl;
         }
         else if (token.type == TokenType::Lt)
         {
-            cout << "    Token::Lt," << endl;
+            std::cout << "    Token::Lt," << std::endl;
         }
         else if (token.type == TokenType::Gt)
         {
-            cout << "    Token::Gt," << endl;
+            std::cout << "    Token::Gt," << std::endl;
         }
         else if (token.type == TokenType::Plus)
         {
-            cout << "    Token::Plus," << endl;
+            std::cout << "    Token::Plus," << std::endl;
         }
         else if (token.type == TokenType::Minus)
         {
-            cout << "    Token::Minus," << endl;
+            std::cout << "    Token::Minus," << std::endl;
         }
         else if (token.type == TokenType::Mul)
         {
-            cout << "    Token::Mul," << endl;
+            std::cout << "    Token::Mul," << std::endl;
         }
         else if (token.type == TokenType::Div)
         {
-            cout << "    Token::Div," << endl;
+            std::cout << "    Token::Div," << std::endl;
         }
         else if (token.type == TokenType::GtEq)
         {
-            cout << "    Token::GtEq," << endl;
+            std::cout << "    Token::GtEq," << std::endl;
         }
         else if (token.type == TokenType::LtEq)
         {
-            cout << "    Token::LtEq," << endl;
+            std::cout << "    Token::LtEq," << std::endl;
         }
         else if (token.type == TokenType::Whitespace)
         {
             if (token.value == " ")
             {
-                cout << "    Token::Whitespace(Whitespace::Space)," << endl;
+                std::cout << "    Token::Whitespace(Whitespace::Space)," << std::endl;
             }
             else if (token.value == "\t")
             {
-                cout << "    Token::Whitespace(Whitespace::Tab)," << endl;
+                std::cout << "    Token::Whitespace(Whitespace::Tab)," << std::endl;
             }
             else if (token.value == "\n")
             {
-                cout << "    Token::Whitespace(Whitespace::Newline)," << endl;
+                std::cout << "    Token::Whitespace(Whitespace::Newline)," << std::endl;
             }
         }
         else if (token.type == TokenType::Eof)
         {
-            cout << "    Token::Eof" << endl;
+            std::cout << "    Token::Eof" << std::endl;
         }
     }
-    cout << "})" << endl;
+    std::cout << "})" << std::endl;
 }
-void printError(TokenizerError error, string input, Token token)
+void printError(const TokenizerError error, const std::string input, const Token token)
 {
-    cout << "Err({" << endl;
+    std::cout << "Err({" << std::endl;
     if (error.kind == ErrorKind::UnexpectedOrUnsupportedToken)
     {
-        cout << "    ErrorKind::UnexpectedOrUnsupportedToken(\'" << token.value << "\')," << endl;
+        std::cout << "    ErrorKind::UnexpectedOrUnsupportedToken(\'" << token.value << "\')," << std::endl;
     }
     else if (error.kind == ErrorKind::UnexpectedWhileParsingOperator)
     {
-        cout << "    ErrorKind::UnexpectedWhileParsingOperator('" << input << "', Token::" << tokenToString(token) << ")," << endl;
+        std::cout << "    ErrorKind::UnexpectedWhileParsingOperator('" << input << "', Token::" << tokenToString(token) << ")," << std::endl;
     }
     else if (error.kind == ErrorKind::OperatorNotClosed)
     {
-        cout << "    ErrorKind::OperatorNotClosed(Token::" << tokenToString(token) << ")," << endl;
+        std::cout << "    ErrorKind::OperatorNotClosed(Token::" << tokenToString(token) << ")," << std::endl;
     }
     else if (error.kind == ErrorKind::StringNotClosed)
     {
-        cout << "    ErrorKind::StringNotClosed," << endl;
+        std::cout << "    ErrorKind::StringNotClosed," << std::endl;
     }
     else if (error.kind == ErrorKind::Other)
     {
-        cout << "    ErrorKind::Other,";
+        std::cout << "    ErrorKind::Other,";
     }
-    cout << "    Location{" << error.location.line << ", " << error.location.col << "}," << endl;
+    std::cout << "    Location{" << error.location.line << ", " << error.location.col << "}," << std::endl;
     size_t pos = 0;
-    while ((pos = error.input.find("\"", pos)) != string::npos)
+    std::string inputCopy = error.input;
+    while ((pos = inputCopy.find("\"", pos)) != std::string::npos)
     {
-        error.input.insert(pos, "\\");
+        inputCopy.insert(pos, "\\");
         pos += 2;
     }
     pos = 0;
-    while ((pos = error.input.find("\'", pos)) != string::npos)
+    while ((pos = inputCopy.find("\'", pos)) != std::string::npos)
     {
-        error.input.insert(pos, "\\");
+        inputCopy.insert(pos, "\\");
         pos += 2;
     }
-    cout << "    \"" << error.input << "\"" << endl;
-    cout << "})" << endl;
-}
-int main(int argc, char *argv[])
-{
-    string input;
-    for (int i = 1; i < argc; i++)
-    {
-        if (i >= 3)
-        {
-            input += " ";
-        }
-        input += argv[i];
-    }
-    while (input.find("\\") != string::npos)
-    {
-        input.replace(input.find("\\"), 1, "\"");
-    }
-    while (input.find("\\") != string::npos)
-    {
-        input.erase(input.find("\\"), 1);
-    }
-    vector<Token> tokens = tokenize(input);
-    if (isPrintError)
-    {
-        return 0;
-    }
-    printTokens(tokens);
-    return 0;
+    std::cout << "    \"" << inputCopy << "\"" << std::endl;
+    std::cout << "})" << std::endl;
 }

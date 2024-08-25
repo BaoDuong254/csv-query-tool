@@ -9,7 +9,7 @@ Successfully developed a basic command-line tool named `exql` that allows users 
 ### Example Usage
 Compile program:
 ```sh
-g++ exql.cpp -o exql
+g++ exql.cpp main.cpp -o exql
 ```
 Running the command:
 ```sh

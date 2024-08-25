@@ -1,6 +1,7 @@
-#include <bits/stdc++.h>
-using namespace std;
-bool isPrintError = false;
+#include <iostream>
+#include <string>
+#include <vector>
+extern bool isPrintError;
 enum class TokenType
 {
     Keyword,
@@ -28,13 +29,9 @@ enum class TokenType
 class Token
 {
 public:
-    TokenType type;
-    string value;
-    Token(TokenType type, string value)
-    {
-        this->type = type;
-        this->value = value;
-    }
+    const TokenType type;
+    const std::string value;
+    Token(TokenType type, std::string value);
 };
 enum class ErrorKind
 {
@@ -54,26 +51,21 @@ struct Location
 class TokenizerError
 {
 public:
-    ErrorKind kind;
-    Location location; // Location of the error
-    string input;      // Input string that caused the error
-    TokenizerError(ErrorKind kind, Location location, string input)
-    {
-        this->kind = kind;
-        this->location = location;
-        this->input = input;
-    }
+    const ErrorKind kind; // Kind of the error
+    const Location location; // Location of the error
+    const std::string input;      // Input string that caused the error
+    TokenizerError(ErrorKind kind, Location location, std::string input);
 };
-TokenizerError unexpectedOrUnsupportedToken(Location, string);
-TokenizerError unexpectedWhileParsingOperator(Location, string);
-TokenizerError operatorNotClosed(Location, string);
-TokenizerError stringNotClosed(Location, string);
-TokenizerError other(Location, string);
-Token tokenizeKeywordOrIdentifier(string);
-Token tokenizeNumber(string);
-Token tokenizeString(string);
-Token tokenizeOperatorOrSeparator(string);
-string tokenToString(Token);
-vector<Token> tokenize(string);
-void printTokens(vector<Token>);
-void printError(TokenizerError, string, Token);
+TokenizerError unexpectedOrUnsupportedToken(const Location, const std::string);
+TokenizerError unexpectedWhileParsingOperator(const Location, const std::string);
+TokenizerError operatorNotClosed(const Location, const std::string);
+TokenizerError stringNotClosed(const Location, const std::string);
+TokenizerError other(const Location, const std::string);
+Token tokenizeKeywordOrIdentifier(const std::string);
+Token tokenizeNumber(const std::string);
+Token tokenizeString(const std::string);
+Token tokenizeOperatorOrSeparator(const std::string);
+std::string tokenToString(const Token);
+std::vector<Token> tokenize(const std::string);
+void printTokens(std::vector<Token>);
+void printError(const TokenizerError, const std::string, const Token);
