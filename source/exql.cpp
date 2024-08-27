@@ -194,18 +194,6 @@ Token tokenizeOperatorOrSeparator(const std::string input)
     {
         return Token(TokenType::LtEq, "<=");
     }
-    else if (input == " ")
-    {
-        return Token(TokenType::Whitespace, " ");
-    }
-    else if (input == "\t")
-    {
-        return Token(TokenType::Whitespace, "\t");
-    }
-    else if (input == "\n")
-    {
-        return Token(TokenType::Whitespace, "\n");
-    }
     return Token(TokenType::Invalid, input);
 }
 std::string tokenToString(const Token token)
@@ -519,12 +507,12 @@ void printTokens(std::vector<Token> tokens)
         {
             size_t pos = 0;
             std::string valueTemp = token.value;
-            while ((pos = token.value.find("\"", pos)) != std::string::npos)
+            while ((pos = valueTemp.find("\"", pos)) != std::string::npos)
             {
                 valueTemp.insert(pos, "\\");
                 pos += 2;
             }
-            std::cout << "    Token::String(\"" << token.value << "\")," << std::endl;
+            std::cout << "    Token::String(\"" << valueTemp << "\")," << std::endl;
         }
         else if (token.type == TokenType::Comma)
         {
@@ -581,21 +569,6 @@ void printTokens(std::vector<Token> tokens)
         else if (token.type == TokenType::LtEq)
         {
             std::cout << "    Token::LtEq," << std::endl;
-        }
-        else if (token.type == TokenType::Whitespace)
-        {
-            if (token.value == " ")
-            {
-                std::cout << "    Token::Whitespace(Whitespace::Space)," << std::endl;
-            }
-            else if (token.value == "\t")
-            {
-                std::cout << "    Token::Whitespace(Whitespace::Tab)," << std::endl;
-            }
-            else if (token.value == "\n")
-            {
-                std::cout << "    Token::Whitespace(Whitespace::Newline)," << std::endl;
-            }
         }
         else if (token.type == TokenType::Eof)
         {

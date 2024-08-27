@@ -22,7 +22,6 @@ enum class TokenType
     Div,
     GtEq,
     LtEq,
-    Whitespace,
     Eof,
     Invalid
 };
