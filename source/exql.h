@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdint>
 extern bool isPrintError;
 enum class TokenType
 {
