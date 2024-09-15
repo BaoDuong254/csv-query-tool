@@ -22,9 +22,9 @@ Running the command:
 ./exql "SELECT id, name FROM users;"
 ```
 
-## Week 2 & 3
+## Week 2, 3 & 4
 
-In week 2 & 3, the goal is to build a SQL parser that transforms a stream of tokens into an Abstract Syntax Tree (AST), representing the structure of SQL queries in a meaningful way.
+In week 2, 3 & 4, the goal is to build a SQL parser that transforms a stream of tokens into an Abstract Syntax Tree (AST), representing the structure of SQL queries in a meaningful way.
 
 ## Progress
 
@@ -32,12 +32,13 @@ In week 2 & 3, the goal is to build a SQL parser that transforms a stream of tok
 
 - **AST Definition**: Implemented the core classes for SQL statements and expressions.
 
+- **Parser Methods**: Implemented the Pratt's parsing algorithm.
+
 ### In Progress
 
-- **Parser Methods**: Developed methods for parsing SQL statements and expressions.
 - **Basic Error Handling**: Set up an error-handling framework to catch and report parsing issues.
 
-## Example usage for week 2 & 3
+## Example usage for week 2, 3 & 4
 
 Compile program:
 
