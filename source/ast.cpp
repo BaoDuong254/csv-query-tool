@@ -1,5 +1,20 @@
 #include "exql.h"
 
+// * Token definition
+std::vector<Token> tokens;
+int current = 0;
+Token current_token()
+{
+    return tokens[current];
+}
+void next_token()
+{
+    if (current < tokens.size() - 1)
+    {
+        current++;
+    }
+}
+
 // * Column class
 std::string Column::getName() const
 {
@@ -228,6 +243,11 @@ std::string Drop::toString() const
 
 // ! Expression classes
 // * Identifier class
+Identifier::Identifier(std::string ident)
+{
+    this->ident = ident;
+}
+
 std::string Identifier::toString() const
 {
     return "Expression::Identifier(\"" + ident + "\")";
@@ -252,6 +272,24 @@ std::string Value::toString() const
         return "Expression::Value(Value::Number(" + std::to_string(num_val) + "))";
     }
     return "";
+}
+
+Value::Value(std::string str_val)
+{
+    this->str_val = str_val;
+    this->type = Type::String;
+}
+
+Value::Value(bool bool_val)
+{
+    this->bool_val = bool_val;
+    this->type = Type::Bool;
+}
+
+Value::Value(int64_t num_val)
+{
+    this->num_val = num_val;
+    this->type = Type::Number;
 }
 
 // * BinaryOperation class
@@ -306,6 +344,18 @@ std::string BinaryOperation::toString() const
     return str;
 }
 
+BinaryOperation::BinaryOperation(Expression *left, BinaryOperator op, Expression *right)
+{
+    this->left = left;
+    this->op = op;
+    this->right = right;
+}
+
+BinaryOperator BinaryOperation::getOperator() const
+{
+    return op;
+}
+
 // * UnaryOperation class
 std::string UnaryOperation::toString() const
 {
@@ -333,6 +383,118 @@ std::string Nested::toString() const
     return "Expression::Nested(" + expr->toString() + ")";
 }
 
+// * Get the precedence of the operators
+
+BinaryOperator tokenTypeToBinaryOperator(TokenType type)
+{
+    switch (type)
+    {
+    case TokenType::Eq:
+        return BinaryOperator::Eq;
+    case TokenType::Neq:
+        return BinaryOperator::Neq;
+    case TokenType::Lt:
+        return BinaryOperator::Lt;
+    case TokenType::LtEq:
+        return BinaryOperator::LtEq;
+    case TokenType::Gt:
+        return BinaryOperator::Gt;
+    case TokenType::GtEq:
+        return BinaryOperator::GtEq;
+    case TokenType::Plus:
+        return BinaryOperator::Plus;
+    case TokenType::Minus:
+        return BinaryOperator::Minus;
+    case TokenType::Mul:
+        return BinaryOperator::Mul;
+    case TokenType::Div:
+        return BinaryOperator::Div;
+    }
+    return BinaryOperator::Invalid;
+}
+
+// Mark the precedence of the operators
+int get_precedence(BinaryOperator op)
+{
+    switch (op)
+    {
+    case BinaryOperator::Or:
+        return 1;
+    case BinaryOperator::And:
+        return 2;
+    case BinaryOperator::Eq:
+    case BinaryOperator::Neq:
+    case BinaryOperator::Lt:
+    case BinaryOperator::LtEq:
+    case BinaryOperator::Gt:
+    case BinaryOperator::GtEq:
+        return 3;
+    case BinaryOperator::Plus:
+    case BinaryOperator::Minus:
+        return 4;
+    case BinaryOperator::Mul:
+    case BinaryOperator::Div:
+        return 5;
+    default:
+        return 0;
+    }
+    return 0;
+}
+
+// Get next precedence
+int get_next_precedence()
+{
+    return get_precedence(tokenTypeToBinaryOperator(current_token().type));
+}
+
+// * Parse functions
+// parse expr expression
+Expression *parse_expr(int precedence)
+{
+    Expression *expr = parse_prefix();
+    int next_precedence = get_next_precedence();
+    while (precedence < next_precedence)
+    {
+        expr = parse_infix(expr, next_precedence);
+        next_precedence = get_precedence(dynamic_cast<BinaryOperation *>(expr)->getOperator());
+    }
+    return expr;
+}
+
+// parse prefix expression
+Expression *parse_prefix()
+{
+    Token token = current_token();
+    next_token();
+    if (token.type == TokenType::Identifier)
+    {
+        return new Identifier(token.value);   
+    }
+    else if (token.type == TokenType::Number)
+    {
+        return new Value(token.value);
+    }
+    else if (token.type == TokenType::String)
+    {
+        return new Value(token.value);
+    }
+    return nullptr;
+}
+
+// parse infix expression
+Expression *parse_infix(Expression *left, int precedence)
+{
+    Token token = current_token();
+    next_token();
+    Expression *right = parse_prefix();
+    int next_precedence = get_next_precedence();
+    if (precedence < next_precedence)
+    {
+        right = parse_infix(right, next_precedence);
+    }
+    return new BinaryOperation(left, tokenTypeToBinaryOperator(token.type), right);
+}
+
 int main(int argc, char *argv[])
 {
     std::string input;
@@ -340,5 +502,5 @@ int main(int argc, char *argv[])
     {
         input += argv[i];
     }
-    std::vector<Token> tokens = tokenize(input);
+    tokens = tokenize(input);
 }

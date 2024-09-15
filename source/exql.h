@@ -59,7 +59,8 @@ enum class BinaryOperator
     Mul,
     Div,
     And,
-    Or
+    Or,
+    Invalid
 };
 
 // Enum class for SQL unary operators
@@ -241,6 +242,7 @@ private:
     std::string ident;
 
 public:
+    Identifier(std::string ident);
     std::string toString() const;
 };
 
@@ -260,6 +262,9 @@ private:
     int64_t num_val;
 
 public:
+    Value(std::string str_val);
+    Value(bool bool_val);
+    Value(int64_t num_val);
     std::string toString() const;
 };
 
@@ -280,6 +285,8 @@ private:
 
 public:
     std::string toString() const;
+    BinaryOperator getOperator() const;
+    BinaryOperation(Expression *left, BinaryOperator op, Expression *right);
 };
 
 // Derived class for unary operations
@@ -345,3 +352,9 @@ std::string tokenToString(const Token);
 std::vector<Token> tokenize(const std::string);
 void printTokens(std::vector<Token>);
 void printError(const TokenizerError, const std::string, const Token);
+BinaryOperator tokenTypeToBinaryOperator(TokenType);
+int get_precedence(BinaryOperator);
+int get_next_precedence();
+Expression *parse_expr(int);
+Expression *parse_prefix();
+Expression *parse_infix(Expression *, int);
