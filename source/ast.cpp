@@ -80,6 +80,12 @@ Expression *Assignment::getValue() const
     return value;
 }
 
+Assignment::Assignment(std::string identifier, Expression *value)
+{
+    this->identifier = identifier;
+    this->value = value;
+}
+
 // * DataType class
 std::string DataType::toString() const
 {
@@ -148,19 +154,26 @@ std::string Select::toString() const
         str += "\n";
     }
     str += "    ],\n";
-    str += "    from: " + from + ",\n";
-    str += "    where: " + where->toString() + "\n";
-    str += "    OrderBy: [\n";
-    for (int i = 0; i < orderBy.size(); ++i)
+    str += "    from: \"" + from + "\",\n";
+    str += "    where: " + where->toString() + ",\n";
+    if (orderBy.size() == 0)
     {
-        str += "        " + orderBy[i]->toString();
-        if (i != orderBy.size() - 1)
-        {
-            str += ",";
-        }
-        str += "\n";
+        str += "    orderby: []\n";
     }
-    str += "    ]\n";
+    else
+    {
+        str += "    orderby: [\n";
+        for (int i = 0; i < orderBy.size(); ++i)
+        {
+            str += "        " + orderBy[i]->toString();
+            if (i != orderBy.size() - 1)
+            {
+                str += ",";
+            }
+            str += "\n";
+        }
+        str += "    ]\n";
+    }
     str += "}\n";
     return str;
 }
@@ -184,7 +197,7 @@ std::string Update::toString() const
     for (int i = 0; i < columns.size(); ++i)
     {
         str += "        Assignment {\n";
-        str += "            column: " + '"' + columns[i]->getName() + '"' + ",\n";
+        str += "            identifier: \"" + columns[i]->getName() + "\",\n";
         str += "            value: " + columns[i]->getValue()->toString() + "\n";
         if (i != columns.size() - 1)
         {
@@ -207,17 +220,24 @@ std::string Insert::toString() const
 {
     std::string str = "Statement::Insert {\n";
     str += "    into: " + into + ",\n";
-    str += "    columns: [\n";
-    for (int i = 0; i < columns.size(); ++i)
+    if (columns.size() == 0)
     {
-        str += "        " + '"' + columns[i] + '"';
-        if (i != columns.size() - 1)
-        {
-            str += ",";
-        }
-        str += "\n";
+        str += "    columns: [],\n";
     }
-    str += "    ],\n";
+    else
+    {
+        str += "    columns: [\n";
+        for (int i = 0; i < columns.size(); ++i)
+        {
+            str += "        \"" + columns[i] + '\"';
+            if (i != columns.size() - 1)
+            {
+                str += ",";
+            }
+            str += "\n";
+        }
+        str += "    ],\n";
+    }
     str += "    values: [\n";
     for (int i = 0; i < values.size(); ++i)
     {
@@ -250,6 +270,10 @@ Identifier::Identifier(std::string ident)
 
 std::string Identifier::toString() const
 {
+    if (ident == "nullptr")
+    {
+        return "nullptr";
+    }
     return "Expression::Identifier(\"" + ident + "\")";
 }
 
@@ -265,11 +289,11 @@ std::string Value::toString() const
     switch (type)
     {
     case Type::String:
-        return "Expression::Value(Value::String(" + str_val + "))";
+        return "Expression::Value(Value::String(\"" + str_val + "\"))";
     case Type::Bool:
-        return "Expression::Value(Value::Bool(" + std::string(bool_val ? "true" : "false") + "))";
+        return "Expression::Value(Value::Bool(\"" + std::string(bool_val ? "true" : "false") + "\"))";
     case Type::Number:
-        return "Expression::Value(Value::Number(" + std::to_string(num_val) + "))";
+        return "Expression::Value(Value::Number(\"" + std::to_string(num_val) + "\"))";
     }
     return "";
 }
@@ -468,7 +492,7 @@ Expression *parse_prefix()
     next_token();
     if (token.type == TokenType::Identifier)
     {
-        return new Identifier(token.value);   
+        return new Identifier(token.value);
     }
     else if (token.type == TokenType::Number)
     {
@@ -495,12 +519,180 @@ Expression *parse_infix(Expression *left, int precedence)
     return new BinaryOperation(left, tokenTypeToBinaryOperator(token.type), right);
 }
 
+Parser::Parser(std::string input)
+{
+    this->input = input;
+}
+
+ParseResult<Statement> Parser::parse_statement()
+{
+    tokens = tokenize(input);
+    for (int i = 0; i < tokens.size(); i++)
+    {
+        if (tokens[i].type == TokenType::Keyword)
+        {
+            if (tokens[i].value == "select")
+            {
+                Select select;
+                select.from = input;
+                i++;
+                while (tokens[i].type != TokenType::Keyword)
+                {
+                    if (tokens[i].type == TokenType::Identifier)
+                    {
+                        select.columns.push_back(new Identifier(tokens[i].value));
+                    }
+                    else if (tokens[i].type == TokenType::Mul)
+                    {
+                        select.columns.push_back(new Wildcard());
+                    }
+                    else
+                    {
+                        i++;
+                        continue;
+                    }
+                    i++;
+                }
+                if (tokens[i].value == "from")
+                {
+                    i += 2;
+                    select.from = tokens[i].value;
+                    i += 2;
+                }
+                if (tokens[i].value == "where")
+                {
+                    i += 2;
+                    select.where = new Identifier(tokens[i].value);
+                    i += 2;
+                }
+                else
+                {
+                    select.where = new Identifier("nullptr");
+                }
+                if (tokens[i].value == "order")
+                {
+                    i += 4;
+                    select.orderBy.push_back(new Identifier(tokens[i].value));
+                }
+                std::cout << select.toString();
+            }
+            else if (tokens[i].value == "update")
+            {
+                Update update;
+                i += 2;
+                update.table = tokens[i].value;
+                i += 2;
+                if (tokens[i].value == "set")
+                {
+                    i += 2;
+                    update.columns.push_back(new Assignment(tokens[i].value, new Identifier(tokens[i + 4].value)));
+                }
+                i += 6;
+                if (tokens[i].value == "where")
+                {
+                    i += 2;
+                    update.where = new Identifier(tokens[i].value);
+                }
+                else
+                {
+                    update.where = new Identifier("nullptr");
+                }
+                std::cout << update.toString();
+            }
+            else if (tokens[i].value == "delete")
+            {
+                Delete del;
+                i += 4;
+                del.from = tokens[i].value;
+                i += 2;
+                if (tokens[i].value == "where")
+                {
+                    i += 2;
+                    del.where = new Identifier(tokens[i].value);
+                }
+                else
+                {
+                    del.where = new Identifier("nullptr");
+                }
+                std::cout << del.toString();
+            }
+            else if (tokens[i].value == "insert")
+            {
+                Insert insert;
+                i += 4;
+                insert.into = tokens[i].value;
+                i += 2;
+                if (tokens[i].value == "(")
+                {
+                    i++;
+                    while (tokens[i].type != TokenType::RightParen)
+                    {
+                        if (tokens[i].type == TokenType::Identifier)
+                        {
+                            insert.columns.push_back(tokens[i].value);
+                            i++;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                    i += 2;
+                }
+                if (tokens[i].value == "values")
+                {
+                    i += 3;
+                    while (tokens[i].type != TokenType::RightParen)
+                    {
+                        if (tokens[i].type == TokenType::String || tokens[i].type == TokenType::Number)
+                        {
+                            insert.values.push_back(new Value(tokens[i].value));
+                            i++;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                }
+                std::cout << insert.toString();
+            }
+            else if (tokens[i].value == "drop")
+            {
+                Drop drop;
+                i += 4 ;
+                drop.name = tokens[i].value;
+                std::cout << drop.toString();
+            }
+        }
+    }
+    return {true};
+}
+
 int main(int argc, char *argv[])
 {
     std::string input;
     for (int i = 1; i < argc; i++)
     {
+        if (i >= 3)
+        {
+            input += " ";
+        }
         input += argv[i];
     }
-    tokens = tokenize(input);
+    while (input.find("\\") != std::string::npos)
+    {
+        input.replace(input.find("\\"), 1, "\"");
+    }
+    while (input.find("\\") != std::string::npos)
+    {
+        input.erase(input.find("\\"), 1);
+    }
+    Parser parser(input);
+    ParseResult<Statement> result = parser.parse_statement();
+    if (!result.success)
+    {
+        throw std::runtime_error("Parsing failed");
+    }
+    return 0;
 }

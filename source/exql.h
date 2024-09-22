@@ -142,6 +142,8 @@ public:
     // Get methods
     std::string getName() const;
     Expression *getValue() const;
+    // constructor
+    Assignment(std::string identifier, Expression *value);
 };
 
 // Class to represent a Column in SQL
@@ -188,6 +190,7 @@ private:
     std::vector<Expression *> orderBy;
 
 public:
+    friend class Parser;
     std::string toString() const;
 };
 
@@ -199,6 +202,7 @@ private:
     Expression *where;
 
 public:
+    friend class Parser;
     std::string toString() const;
 };
 
@@ -211,6 +215,7 @@ private:
     Expression *where;
 
 public:
+    friend class Parser;
     std::string toString() const;
 };
 
@@ -223,6 +228,7 @@ private:
     std::vector<Expression *> values;
 
 public:
+    friend class Parser;
     std::string toString() const;
 };
 
@@ -232,6 +238,7 @@ class Drop : public Statement
 private:
     std::string name; // table name
 public:
+    friend class Parser;
     std::string toString() const;
 };
 
@@ -322,11 +329,10 @@ public:
 template <typename T>
 struct ParseResult
 {
-    bool success;      // Flag indicating if the parsing was successful
-    T result;          // Holds the result if successful
-    ParserError error; // Holds the error details if unsuccessful
+    bool success; // Flag indicating if the parsing was successful
+    // T result;     // Holds the result if successful
+    // ParserError error; // Holds the error details if unsuccessful
 };
-
 class Parser
 {
 private:
@@ -334,6 +340,7 @@ private:
     Token *token;      // Token class from Lexer phase
     Location location; // Location class from Lexer phase
 public:
+    Parser(std::string input);
     // Parser methods
     ParseResult<Statement> parse_statement();
     ParseResult<Expression> parse_expression();
@@ -348,8 +355,8 @@ Token tokenizeKeywordOrIdentifier(const std::string);
 Token tokenizeNumber(const std::string);
 Token tokenizeString(const std::string);
 Token tokenizeOperatorOrSeparator(const std::string);
-std::string tokenToString(const Token);
 std::vector<Token> tokenize(const std::string);
+std::string tokenToString(const Token);
 void printTokens(std::vector<Token>);
 void printError(const TokenizerError, const std::string, const Token);
 BinaryOperator tokenTypeToBinaryOperator(TokenType);
