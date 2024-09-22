@@ -144,6 +144,11 @@ public:
     Expression *getValue() const;
     // constructor
     Assignment(std::string identifier, Expression *value);
+    // dtor
+    ~Assignment()
+    {
+        delete value;
+    }
 };
 
 // Class to represent a Column in SQL
@@ -168,6 +173,11 @@ public:
     static Column primaryKey(const std::string &name, DataType dataType);
     // Static method to create a Column with Unique constraint
     static Column unique(const std::string &name, DataType dataType);
+    // dtor
+    ~Column()
+    {
+        constraints.clear();
+    }
 };
 
 // Derived class for CREATE statements
@@ -178,6 +188,11 @@ private:
     std::vector<Column> columns; // table columns
 public:
     std::string toString() const;
+    // dtor
+    ~Create()
+    {
+        columns.clear();
+    }
 };
 
 // Derived class for SELECT statements
@@ -192,6 +207,19 @@ private:
 public:
     friend class Parser;
     std::string toString() const;
+    // dtor
+    ~Select()
+    {
+        for (auto &column : columns)
+        {
+            delete column;
+        }
+        delete where;
+        for (auto &order : orderBy)
+        {
+            delete order;
+        }
+    }
 };
 
 // Derived class for DELETE statements
@@ -204,6 +232,11 @@ private:
 public:
     friend class Parser;
     std::string toString() const;
+    // dtor
+    ~Delete()
+    {
+        delete where;
+    }
 };
 
 // Derived class for UPDATE statements
@@ -217,6 +250,15 @@ private:
 public:
     friend class Parser;
     std::string toString() const;
+    // dtor
+    ~Update()
+    {
+        for (auto &column : columns)
+        {
+            delete column;
+        }
+        delete where;
+    }
 };
 
 // Derived class for INSERT statements
@@ -230,6 +272,14 @@ private:
 public:
     friend class Parser;
     std::string toString() const;
+    // dtor
+    ~Insert()
+    {
+        for (auto &value : values)
+        {
+            delete value;
+        }
+    }
 };
 
 // Derived class for DROP statement
@@ -294,6 +344,12 @@ public:
     std::string toString() const;
     BinaryOperator getOperator() const;
     BinaryOperation(Expression *left, BinaryOperator op, Expression *right);
+    // dtor
+    ~BinaryOperation()
+    {
+        delete left;
+        delete right;
+    }
 };
 
 // Derived class for unary operations
@@ -305,6 +361,11 @@ private:
 
 public:
     std::string toString() const;
+    // dtor
+    ~UnaryOperation()
+    {
+        delete expr;
+    }
 };
 
 // Derived class for nested expressions
@@ -315,6 +376,11 @@ private:
 
 public:
     std::string toString() const;
+    //dtor
+    ~Nested()
+    {
+        delete expr;
+    }
 };
 
 // Define a class for ParserError
@@ -344,6 +410,11 @@ public:
     // Parser methods
     ParseResult<Statement> parse_statement();
     ParseResult<Expression> parse_expression();
+    // dtor
+    ~Parser()
+    {
+        delete token;
+    }
 };
 
 TokenizerError unexpectedOrUnsupportedToken(const Location, const std::string);
