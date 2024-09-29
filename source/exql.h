@@ -301,7 +301,7 @@ private:
     std::string ident;
 
 public:
-    Identifier(std::string ident);
+    Identifier(const std::string ident);
     std::string toString() const;
 };
 
@@ -321,9 +321,9 @@ private:
     int64_t num_val;
 
 public:
-    Value(std::string str_val);
-    Value(bool bool_val);
-    Value(int64_t num_val);
+    Value(const std::string str_val);
+    Value(const bool bool_val);
+    Value(const int64_t num_val);
     std::string toString() const;
 };
 
@@ -378,7 +378,7 @@ private:
 
 public:
     std::string toString() const;
-    //dtor
+    // dtor
     ~Nested()
     {
         delete expr;
@@ -408,7 +408,7 @@ private:
     Token *token;      // Token class from Lexer phase
     Location location; // Location class from Lexer phase
 public:
-    Parser(std::string input);
+    Parser(const std::string input);
     // Parser methods
     ParseResult<Statement> parseStatement();
     ParseResult<Expression> parseExpression();
@@ -430,7 +430,7 @@ Token tokenizeString(const std::string);
 Token tokenizeOperatorOrSeparator(const std::string);
 std::vector<Token> tokenize(const std::string);
 std::string tokenToString(const Token);
-void printTokens(std::vector<Token>);
+void printTokens(const std::vector<Token>);
 void printError(const TokenizerError, const std::string, const Token);
 BinaryOperator tokenTypeToBinaryOperator(TokenType);
 int getPrecedence(BinaryOperator);
@@ -440,4 +440,4 @@ Expression *parsePrefix();
 Expression *parseInfix(Expression *, int);
 Token currentToken();
 int nextTokenIndex();
-std::string handleFile(const std::string&, int);
+std::string handleFile(const std::string &, int);
