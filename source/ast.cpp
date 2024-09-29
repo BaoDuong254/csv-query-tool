@@ -410,6 +410,49 @@ std::string Nested::toString() const
     return "Expression::Nested(" + expr->toString() + ")";
 }
 
+// * Handle file function
+std::string handleFile(const std::string filename, int type)
+{
+    std::stringstream output;
+    std::ifstream file;
+    std::string filePath = "../data/" + filename + ".csv";
+    file.open(filePath);
+    if (file.is_open())
+    {
+        std::string line;
+        std::vector<std::string> data;
+        while (getline(file, line))
+        {
+            data.push_back(line);
+        }
+        if (type == 0)
+        {
+            for (int i = 1; i < data.size(); i++)
+            {
+                output << data[i] << std::endl;
+            }
+        }
+        else if (type == 1)
+        {
+            for (int i = 1; i < data.size(); i++)
+            {
+                std::istringstream ss(data[i]);
+                std::string id, first_name, last_name;
+                getline(ss, id, ',');
+                getline(ss, first_name, ',');
+                getline(ss, last_name, ',');
+                output << id << "," << first_name << "," << last_name << std::endl;
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        throw std::runtime_error("File not found");
+    }
+    return output.str();
+}
+
 // * Get the precedence of the operators
 
 BinaryOperator tokenTypeToBinaryOperator(TokenType type)
@@ -530,13 +573,14 @@ Parser::Parser(std::string input)
 ParseResult<Statement> Parser::parseStatement()
 {
     tokens = tokenize(input);
+    int type = 0;
+    Select select;
     for (int i = 0; i < tokens.size(); i++)
     {
         if (tokens[i].type == TokenType::Keyword)
         {
             if (tokens[i].value == "select")
             {
-                Select select;
                 select.from = input;
                 i++;
                 while (tokens[i].type != TokenType::Keyword)
@@ -544,6 +588,7 @@ ParseResult<Statement> Parser::parseStatement()
                     if (tokens[i].type == TokenType::Identifier)
                     {
                         select.columns.push_back(new Identifier(tokens[i].value));
+                        type = 1;
                     }
                     else if (tokens[i].type == TokenType::Mul)
                     {
@@ -669,6 +714,8 @@ ParseResult<Statement> Parser::parseStatement()
             }
         }
     }
+    std::cout << "\n---------------------------------\n\n";
+    std::cout << handleFile(select.from, type);
     return {true};
 }
 

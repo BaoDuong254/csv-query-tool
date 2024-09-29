@@ -67,7 +67,7 @@ In week 6, the focus was on extending the functionality of the SQL parser to han
 Compile program:
 
 ```sh
-g++ handle.cpp exql.cpp -o handle
+g++ ast.cpp exql.cpp -o handle
 ```
 
 Running the command:

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
@@ -440,4 +441,4 @@ Expression *parsePrefix();
 Expression *parseInfix(Expression *, int);
 Token currentToken();
 int nextTokenIndex();
-std::string handleFile(const std::string &, int);
+std::string handleFile(const std::string = "", int = 0);
