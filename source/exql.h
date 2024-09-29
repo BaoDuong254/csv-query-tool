@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <fstream>
+#include <sstream>
 
 extern bool isPrintError;
 
@@ -408,8 +410,8 @@ private:
 public:
     Parser(std::string input);
     // Parser methods
-    ParseResult<Statement> parse_statement();
-    ParseResult<Expression> parse_expression();
+    ParseResult<Statement> parseStatement();
+    ParseResult<Expression> parseExpression();
     // dtor
     ~Parser()
     {
@@ -431,8 +433,11 @@ std::string tokenToString(const Token);
 void printTokens(std::vector<Token>);
 void printError(const TokenizerError, const std::string, const Token);
 BinaryOperator tokenTypeToBinaryOperator(TokenType);
-int get_precedence(BinaryOperator);
-int get_next_precedence();
-Expression *parse_expr(int);
-Expression *parse_prefix();
-Expression *parse_infix(Expression *, int);
+int getPrecedence(BinaryOperator);
+int getNextPrecedence();
+Expression *parseExpr(int);
+Expression *parsePrefix();
+Expression *parseInfix(Expression *, int);
+Token currentToken();
+int nextTokenIndex();
+std::string handleFile(const std::string&, int);

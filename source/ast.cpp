@@ -1,18 +1,21 @@
 #include "exql.h"
 
-// * Token definition
+// Tokens definition
 std::vector<Token> tokens;
 int current = 0;
-Token current_token()
+
+Token currentToken()
 {
     return tokens[current];
 }
-void next_token()
+
+int nextTokenIndex()
 {
     if (current < tokens.size() - 1)
     {
         current++;
     }
+    return current;
 }
 
 // * Column class
@@ -438,7 +441,7 @@ BinaryOperator tokenTypeToBinaryOperator(TokenType type)
 }
 
 // Mark the precedence of the operators
-int get_precedence(BinaryOperator op)
+int getPrecedence(BinaryOperator op)
 {
     switch (op)
     {
@@ -466,30 +469,30 @@ int get_precedence(BinaryOperator op)
 }
 
 // Get next precedence
-int get_next_precedence()
+int getNextPrecedence()
 {
-    return get_precedence(tokenTypeToBinaryOperator(current_token().type));
+    return getPrecedence(tokenTypeToBinaryOperator(currentToken().type));
 }
 
 // * Parse functions
 // parse expr expression
-Expression *parse_expr(int precedence)
+Expression *parseExpr(int precedence)
 {
-    Expression *expr = parse_prefix();
-    int next_precedence = get_next_precedence();
+    Expression *expr = parsePrefix();
+    int next_precedence = getNextPrecedence();
     while (precedence < next_precedence)
     {
-        expr = parse_infix(expr, next_precedence);
-        next_precedence = get_precedence(dynamic_cast<BinaryOperation *>(expr)->getOperator());
+        expr = parseInfix(expr, next_precedence);
+        next_precedence = getPrecedence(dynamic_cast<BinaryOperation *>(expr)->getOperator());
     }
     return expr;
 }
 
 // parse prefix expression
-Expression *parse_prefix()
+Expression *parsePrefix()
 {
-    Token token = current_token();
-    next_token();
+    Token token = currentToken();
+    nextTokenIndex();
     if (token.type == TokenType::Identifier)
     {
         return new Identifier(token.value);
@@ -506,15 +509,15 @@ Expression *parse_prefix()
 }
 
 // parse infix expression
-Expression *parse_infix(Expression *left, int precedence)
+Expression *parseInfix(Expression *left, int precedence)
 {
-    Token token = current_token();
-    next_token();
-    Expression *right = parse_prefix();
-    int next_precedence = get_next_precedence();
+    Token token = currentToken();
+    nextTokenIndex();
+    Expression *right = parsePrefix();
+    int next_precedence = getNextPrecedence();
     if (precedence < next_precedence)
     {
-        right = parse_infix(right, next_precedence);
+        right = parseInfix(right, next_precedence);
     }
     return new BinaryOperation(left, tokenTypeToBinaryOperator(token.type), right);
 }
@@ -524,7 +527,7 @@ Parser::Parser(std::string input)
     this->input = input;
 }
 
-ParseResult<Statement> Parser::parse_statement()
+ParseResult<Statement> Parser::parseStatement()
 {
     tokens = tokenize(input);
     for (int i = 0; i < tokens.size(); i++)
@@ -660,7 +663,7 @@ ParseResult<Statement> Parser::parse_statement()
             else if (tokens[i].value == "drop")
             {
                 Drop drop;
-                i += 4 ;
+                i += 4;
                 drop.name = tokens[i].value;
                 std::cout << drop.toString();
             }
@@ -689,7 +692,7 @@ int main(int argc, char *argv[])
         input.erase(input.find("\\"), 1);
     }
     Parser parser(input);
-    ParseResult<Statement> result = parser.parse_statement();
+    ParseResult<Statement> result = parser.parseStatement();
     if (!result.success)
     {
         throw std::runtime_error("Parsing failed");

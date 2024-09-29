@@ -53,3 +53,25 @@ Running the command:
 ```sh
 ./ast "SELECT id, name FROM users;"
 ```
+
+## Week 6
+
+In week 6, the focus was on extending the functionality of the SQL parser to handle file processing for SELECT statements. This involves reading SQL queries from files, executing them, and then displaying the results in a structured manner.
+
+## Progress
+
+- **File Input Handling**: Successfully implemented functionality that allows users to execute SELECT queries from a file. 
+
+## Example usage for week 6
+
+Compile program:
+
+```sh
+g++ handle.cpp exql.cpp -o handle
+```
+
+Running the command:
+
+```sh
+./handle "SELECT id, name FROM data;"
+```
