@@ -1,0 +1,68 @@
+\begin{codescroll}[numbers=left,style=Matlab-editor]{code1}{43}{24}
+			% Tạo chương trình
+			function BTLVL1
+			clc;
+			close all;
+			clear;
+			% Khai báo biến
+			syms r(t) x(t) y(t) X Y
+			% Nhập giá trị đầu vào
+			disp('r(t)=x0cos(5t)+y0cos(5t+Phi)');
+			x0= input('Nhập giá trị cho x0 : ');
+			y0= input('Nhập giá trị cho y0 : ');
+			a= input('Nhập giá trị cho Phi : ');
+			% Phương trình chuyển động và phương trình quỹ đạo
+			r(t)=x0*cos(5*t)+y0*cos(5*t+a);
+			disp(['r(t) = ',char(r)]);
+			x(t)=x0*cos(5*t);
+			y(t)=y0*cos(5*t+a);
+			disp('Phương trình chuyển động:');
+			disp(['x(t) = ',char(x)]);
+			disp(['y(t) = ',char(y)]);
+			if x0==0 && y0==0
+			disp('=> Vật đứng yên');
+			elseif x0==0
+			k=x/y;
+			A=X-k*Y;
+			disp('Phương trình quỹ đạo:');
+			disp([char(A),' = 0']);
+			disp('=> Quỹ đạo là đường thẳng');
+			elseif y0==0
+			k=y/x;
+			A=Y-k*X;
+			disp('Phương trình quỹ đạo:');
+			disp([char(A),' = 0']);
+			disp('=> Quỹ đạo là đường thẳng');
+			elseif mod((a/pi),1)==0
+			k=y/x;
+			A=Y-k*X;
+			disp('Phương trình quỹ đạo:');
+			disp([char(A),' = 0']);
+			disp('=> Quỹ đạo là đường thẳng');
+			elseif mod((a/pi)-1/2,1)==0
+			disp('Phương trình quỹ đạo:');
+			if x0==y0
+			disp(['X^2 + Y^2 = ',num2str(x0^2)]);
+			disp('=> Quỹ đạo là đường tròn');
+			else
+			D=X^2/x0^2 + Y^2/y0^2;
+			disp([char(D),' = 1']);
+			disp('=> Quỹ đạo là đường elip');
+			end
+			else
+			M=X^2/x0^2 + ((X*cos(a)/x0)-Y/y0)^2/(sin(a))^2;
+			disp('Phương trình quỹ đạo:');
+			disp([char(M),' = 1']);
+			disp('=> Quỹ đạo là đường elip xiên');
+			end
+			% Vẽ quỹ đạo của vật
+			figure('name','Phương trình quỹ đạo');
+			fplot(x,y,'r');
+			axis equal
+			title('Phương trình quỹ đạo của vật theo thời gian ');
+			set(gca,'XAxisLocation','origin','YAxisLocation','origin')
+			xlabel('Ox');
+			ylabel('Oy');
+			grid on;
+			end
+		\end{codescroll}

@@ -1,0 +1,6 @@
+\beamer@sectionintoc {1}{Mở đầu}{3}{0}{1}
+\beamer@sectionintoc {2}{Timelines}{5}{0}{2}
+\beamer@subsectionintoc {2}{1}{SQL Lexer}{6}{0}{2}
+\beamer@subsectionintoc {2}{2}{SQL Parser}{9}{0}{2}
+\beamer@subsectionintoc {2}{3}{Handle file}{12}{0}{2}
+\beamer@sectionintoc {3}{Kết luận}{15}{0}{3}
